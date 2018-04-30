@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Wakatanka - Face masking</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+    
+        header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    
+        main {
+            border: black 1px solid;
+            padding: 10px;
+        }
+    
+        canvas {
+            margin: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Example : Face masking</h1>
+    </header>
+    
+    <main>
+        <div id="canvasDiv"></div>
+    </main>
+
+    <script src="../../Src/WakatankaImporter.js"></script>
+    <script>
+
+        WakatankaImporter.onImportAll("../../Src/", function() {
+
+            var wakatanka = new Wakatanka(1180, 663);
+            
+            var canvas = wakatanka.canvas;
+            var canvasDiv = document.getElementById("canvasDiv");
+            canvasDiv.appendChild(canvas);
+
+            var faceImage = new FaceImage("macron2.jpg");
+            var capture = new VideoCapturing(wakatanka.canvas.width, wakatanka.canvas.height);
+
+            faceImage.onLoad(function () {
+
+                var faceImagePoints = faceImage.getPositions();
+
+                capture.onStart(function () {
+
+                    var faceTracking = new FaceTracking(capture.video, wakatanka.canvas.width, wakatanka.canvas.height);
+
+                    update();
+
+                    function update() {
+                        requestAnimationFrame(update);
+
+                        wakatanka.draw(capture.video);
+
+                        faceTracking.onTrack(function () {
+                            if (faceTracking.getScore() >= 0.4) {
+                                faceTracking.drawFace3D(faceImage.faceImage, faceImagePoints, wakatanka.canvas);
+                            }
+                            else {
+                                faceTracking.drawFace2D(wakatanka.canvas);
+                            }
+                        });
+                    }
+
+                });
+
+            });
+
+        })
+
+    </script>
+</body>
+</html>

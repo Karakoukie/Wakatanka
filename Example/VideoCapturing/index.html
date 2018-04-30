@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Wakatanka - Video capturing</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+    
+        header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    
+        main {
+            border: black 1px solid;
+            padding: 10px;
+        }
+    
+        canvas {
+            margin: auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Example : Video capturing</h1>
+    </header>
+    
+    <main>
+        <div id="canvasDiv"></div>
+    </main>
+
+    <script src="../../Src/WakatankaImporter.js"></script>
+    <script>
+
+        WakatankaImporter.loadVideoCapturing();
+        WakatankaImporter.onImporting("../../Src/", function () {
+
+            var wakatanka = new Wakatanka(1180, 663);
+            
+            var canvas = wakatanka.canvas;
+            var canvasDiv = document.getElementById("canvasDiv");
+            canvasDiv.appendChild(canvas);
+
+            var capture = new VideoCapturing(wakatanka.canvas.width, wakatanka.canvas.height);
+
+            capture.onStart(function () {
+
+                update();
+
+                function update() {
+                    requestAnimationFrame(update);
+
+                    wakatanka.draw(capture.video);
+                }
+
+            });
+
+        });
+
+    </script>
+</body>
+
+</html>

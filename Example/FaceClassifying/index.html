@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Wakatanka - Face classifying</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+
+        header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        main {
+            border: black 1px solid;
+            padding: 10px;
+        }
+
+        canvas {
+            margin: auto;
+            display: block;
+        }
+
+        #classifyingDiv {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Example : Face classifying</h1>
+    </header>
+
+    <main>
+        <div id="canvasDiv"></div>
+        <div id="classifyingDiv">
+            <span>Face type :</span>
+            <span id="classifyingText">No face detected</span>
+        </div>
+    </main>
+
+    <script src="../../Src/WakatankaImporter.js"></script>
+    <script>
+
+        WakatankaImporter.onImportAll("../../Src/", function() {
+
+            var wakatanka = new Wakatanka(1180, 663);
+            
+            var canvas = wakatanka.canvas;
+            var canvasDiv = document.getElementById("canvasDiv");
+            canvasDiv.appendChild(canvas);
+
+            var capture = new VideoCapturing(wakatanka.canvas.width, wakatanka.canvas.height);
+
+            capture.onStart(function () {
+
+                var faceTracking = new FaceTracking(capture.video, wakatanka.canvas.width, wakatanka.canvas.height);
+
+                var faceClassifier = new FaceClassifier();
+                faceClassifier.addModel("type1", ["-11.6108157316579", "-5.74519644419097", "-0.485275722421246", "0.15538312676932", "-0.080844913105617", "0.281528821202803", "-0.116207774213787", "0.021618332807307", "-0.443375462812664", "-0.20250701490794", "0.313808182824631", "-0.417938630629395", "0.028075582200426", "0.287912278485519", "0.361525072326904", "-0.155952676768218", "0.152838538646805", "0.275792173824334"]);
+
+                update();
+
+                var classifyingText = document.getElementById("classifyingText");
+
+                function update() {
+                    requestAnimationFrame(update);
+
+                    wakatanka.draw(capture.video);
+
+                    faceTracking.onTrack(function () {
+                        if (faceTracking.getScore() >= 0.4) {
+                            faceClassifier.predict(faceTracking.getParameters());
+                            classifyingText.innerHTML = faceClassifier.getResult();
+                        }
+
+                        faceTracking.drawFace2D(wakatanka.canvas);
+                    });
+                }
+
+            });
+
+        })
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Wakatanka - ThreeJS</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+    
+        header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    
+        main {
+            border: black 1px solid;
+            padding: 10px;
+        }
+    
+        canvas {
+            margin: auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Example : ThreeJS</h1>
+    </header>
+    
+    <main>
+        <div id="canvasDiv"></div>
+    </main>
+
+    <script src="../../Src/WakatankaImporter.js"></script>
+    <script>
+        
+        WakatankaImporter.loadThreeJS();
+        WakatankaImporter.onImporting("../../Src/", function () {
+            
+            // Instantiation d'un objet ThreeJS de largeur 1180 et de hauteur 663
+            var threeJS = new ThreeJS(1180, 663);
+
+            var canvas = threeJS.getCanvas();
+            var canvasDiv = document.getElementById("canvasDiv");
+            canvasDiv.appendChild(canvas);
+
+            // Ajout d'un skybox
+            //threeJS.setBackground();
+
+            // Ajout d'un ciel procédural
+            //threeJS.addSky();
+
+            // Ajout d'une grille de taille 10x10
+            var grid = threeJS.addGrid(10);
+            grid.position.y = -1;
+
+            // Ajout d'un cube de taille 1x1x1 et avec ombres.
+            var cube = threeJS.addCube(1, 1, 1, true);
+            cube.position.x = 2;
+
+            // Ajout d'une sphere de rayon 1 possédant 10 segments et avec ombres.
+            var sphere = threeJS.addSphere(1, 10, true);
+            sphere.position.x = -2;
+
+            // Ajout d'un plan de longueur 10, de hauteur 10 et avec ombres.
+            var plane = threeJS.addPlane(10, 10, true);
+            plane.position.y = -2;
+            plane.rotation.x = -1.55;
+
+            // Ajout d'une lumière d'ambience de couleur gris foncé.
+            var ambientLight = threeJS.addAmbientLight(0x777777);
+
+            // Ajout d'une lumière directionnelle de couleur blanche.
+            var directionnalLight = threeJS.addDirectionnalLight(0xFFFFFF);
+            directionnalLight.position.z = 0.5;
+
+            // Ajout du post-processing flou lumineux
+            threeJS.addBloom();
+
+            // Importation d'un modèle 3D au format FBX.
+            //threeJS.importMesh();
+
+            // Rendu.
+            threeJS.render();
+
+        });
+
+    </script>
+</body>
+
+</html>

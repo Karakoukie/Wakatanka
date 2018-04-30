@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+    
+        header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    
+        main {
+            border: black 1px solid;
+            padding: 10px;
+        }
+    
+        canvas {
+            margin: auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Example : WebGL</h1>
+    </header>
+    
+    <main>
+        <div id="canvasDiv"></div>
+    </main>
+
+    <script src="../../Src/WakatankaImporter.js"></script>
+    <script>
+
+        WakatankaImporter.loadCanvas3D();
+        WakatankaImporter.onImporting("../../Src/", function () {
+
+            var canvas3D = new Canvas3D(1180, 663);
+
+            var canvas = canvas3D.element;
+            var canvasDiv = document.getElementById("canvasDiv");
+            canvasDiv.appendChild(canvas);
+
+            var scene = new Scene();
+            canvas3D.setCurrentScene(scene);
+
+            var mesh = new Mesh();
+            mesh.vertices = [-1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, -1];
+            mesh.indices = [0, 1, 2, 0, 2, 3, 1, 5, 6, 1, 6, 2, 5, 4, 7, 5, 7, 6, 4, 0, 3, 4, 3, 7, 6, 7, 3, 6, 3, 2, 0, 5, 1, 0, 4, 5];
+
+            var i = 5;
+            for (var x = 0; x < i; x++) {
+                for (var y = 0; y < i; y++) {
+                    for (var z = 0; z < i; z++) {
+                        var cube = new Object3D();
+                        cube.mesh = mesh;
+                        cube.transform.position = [x * 5 - i * 2, y * 5 - i * 2, z * 5 - 50];
+                        cube.mainColor = [Math.random(), Math.random(), Math.random(), 1];
+                        scene.addObject3D(cube);
+                    }
+                }
+            }
+
+            var mainCamera = new Camera();
+            scene.setCurrentCamera(mainCamera);
+
+            canvas3D.init();
+
+            update();
+            function update() {
+                window.requestAnimationFrame(update);
+                canvas3D.render();
+                scene.object3DList.forEach(element => {
+                    element.transform.rotation[1] += element.transform.position[0] * 0.5;
+                    element.transform.rotation[0] += element.transform.position[1] * 0.5;
+
+                    element.mainColor[0] = (element.mainColor[0] + 0.01) % 1;
+                    element.mainColor[1] = (element.mainColor[1] + 0.01) % 1;
+                    element.mainColor[2] = (element.mainColor[2] + 0.01) % 1;
+                    //element.transform.position[0] += 0.1;
+                });
+            }
+        });
+
+    </script>
+</body>
+
+</html>

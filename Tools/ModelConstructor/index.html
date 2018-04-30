@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>PDM Modelviewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            display: block;
+            padding: 50px;
+        }
+
+        #header {
+            border: black 1px solid;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #modelDiv {
+            column-count: 2;
+        }
+
+        #modelCanvas {
+            border: black 1px solid;
+        }
+
+        #controlsDiv {
+            padding: 20px;
+            border: black 1px solid;
+            height: 560px;
+        }
+
+        #generationDiv {
+            padding: 20px;
+            border: black 1px solid;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="header">
+        <h1>Model constructor</h1>
+    </div>
+
+    <div id="modelDiv">
+
+        <canvas id="modelCanvas" width="600" height="600"></canvas>
+        <div id="controlsDiv"></div>
+
+    </div>
+
+    <div id="generationDiv">
+        
+        <div>
+            <ol>
+                <li>Construisez votre modèle avec les contrôleurs</li>
+                <li>Cliquez sur le bouton ci-dessous pour générer les coefficients</li>
+            </ol>
+        </div>
+
+        <div>
+            <button id="generationButton">Generate coefficients</button>
+            <input type="text" id="generationInput" size="100">
+        </div>
+
+    </div>
+    
+    <script src="model.js"></script>
+    <script>
+
+        var canvas = document.getElementById("modelCanvas");
+
+        var pnums = pModel.shapeModel.eigenValues.length;
+        var controls = [];
+
+        var controlsDiv = document.getElementById("controlsDiv");
+
+        for (var i = 2; i < pnums; i++) {
+            var eig = Math.sqrt(pModel.shapeModel.eigenValues[i]) * 3;
+
+            var controlInputSpan = document.createElement("div");
+            controlInputSpan.innerHTML = "Controller n°" + (i-1) + " : ";
+            controlsDiv.appendChild(controlInputSpan);
+
+            var controlInput = document.createElement("input");
+            controlInput.type = "range";
+            controlInput.min = -eig;
+            controlInput.max = eig;
+            controlInput.value = 0;
+
+            controlInputSpan.appendChild(controlInput);
+            controls.push(controlInput);
+
+            controlInput.onchange = function () {
+                draw(canvas);
+            };
+        }
+
+        var resetButton = document.createElement("button");
+        resetButton.innerHTML = "Reset";
+        controlsDiv.appendChild(resetButton);
+
+        resetButton.onclick = function() {
+            for(var i=0; i<controls.length; i++) {
+                controls[i].value = 0;
+                draw(canvas);
+            }
+        };
+
+        var button = document.getElementById("generationButton");
+        var modelText = document.getElementById("generationInput");
+
+        button.onclick = function () {
+            var params = getPositions();
+            modelText.value = JSON.stringify(params);
+        };
+
+        draw(canvas);
+
+        function getPositions() {
+            var params = [];
+            
+            for (var i = 0; i < pnums-2; i++) {
+                params.push(controls[i].value);
+            }
+
+            return params;
+        }
+
+        function draw(canvas) {
+            var cc = canvas.getContext('2d');
+
+            cc.clearRect(0, 0, canvas.width, canvas.height);
+            cc.fillStyle = "rgb(0,0,0)";
+            cc.strokeStyle = "rgb(0,0,0)";
+            cc.save();
+
+            var params = getPositions();
+            var paramsSub = [0, 0];
+            params = paramsSub.concat(params);
+
+            var paths = pModel.path.normal;
+
+            for (var i = 0; i < paths.length; i++) {
+                if (typeof (paths[i]) == 'number') {
+                    drawPoint(cc, paths[i], params);
+                }
+                else {
+                    drawPath(cc, paths[i], params);
+                }
+            }
+
+            cc.restore()
+        }
+
+        function drawPoint(canvasContext, point, dp) {
+            var i, x, y;
+
+            i = point * 2;
+            x = pModel.shapeModel.meanShape[i / 2][0];
+            y = pModel.shapeModel.meanShape[i / 2][1];
+
+            for (var j = 0; j < pModel.shapeModel.numEvalues; j++) {
+                x += pModel.shapeModel.eigenVectors[i][j] * dp[j];
+                y += pModel.shapeModel.eigenVectors[i + 1][j] * dp[j];
+            }
+
+            a = 4 * x;
+            b = 4 * y;
+
+            x += a;
+            y += b;
+
+            canvasContext.beginPath();
+            canvasContext.arc(x, y, 2, 0, Math.PI * 2, true);
+            canvasContext.closePath();
+            canvasContext.fill();
+        }
+
+        function drawPath(canvasContext, path, dp) {
+            canvasContext.beginPath();
+            
+            var i, x, y;
+            
+            for (var p = 0; p < path.length; p++) {
+                
+                i = path[p] * 2;
+                x = pModel.shapeModel.meanShape[i / 2][0];
+                y = pModel.shapeModel.meanShape[i / 2][1];
+                
+                for (var j = 0; j < pModel.shapeModel.numEvalues; j++) {
+                    x += pModel.shapeModel.eigenVectors[i][j] * dp[j];
+                    y += pModel.shapeModel.eigenVectors[i + 1][j] * dp[j];
+                }
+
+                a = 4 * x;
+                b = 4 * y;
+                x += a;
+                y += b;
+
+                if (i == 0) {
+                    canvasContext.moveTo(x, y);
+                } else {
+                    canvasContext.lineTo(x, y);
+                }
+            }
+
+            canvasContext.moveTo(0, 0);
+            canvasContext.closePath();
+            canvasContext.stroke();
+        }
+
+    </script>
+</body>
+
+</html>
